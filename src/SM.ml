@@ -28,7 +28,7 @@ let eval_instriction config_sm instruction =
 	let (st, input, output) = config in
 	match instruction with
 	| BINOP op -> (match stack with
-		              | y::x::rest -> [Syntax.Expr.calc op x y] @ rest, config
+		              | y::x::rest -> [Syntax.Expr.operator op x y] @ rest, config
 				)
 	| CONST x  -> [x] @ stack, config
 	| READ     -> (match input with
