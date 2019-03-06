@@ -29,7 +29,7 @@ let eval_instriction config_sm instruction =
 	let (st, input, output) = config in
 	match instruction with
 	| BINOP op -> (match stack with
-		              | y::x::rest -> [Syntax.Expr.operator op x y] @ rest, config
+		              | y::x::rest -> [Language.Expr.operator op x y] @ rest, config
 				)
 	| CONST x  -> [x] @ stack, config
 	| READ     -> (match input with
@@ -40,7 +40,7 @@ let eval_instriction config_sm instruction =
                 )
 	| LD var   -> [st var] @ stack, config
 	| ST var   -> (match stack with
-		              | x::rest -> rest, (Syntax.Expr.update var x st, input, output)
+		              | x::rest -> rest, (Language.Expr.update var x st, input, output)
                 )
 
 let eval config_sm prog = List.fold_left eval_instriction config_sm prog
@@ -63,12 +63,12 @@ let run p i = let (_, (_, _, o)) = eval ([], (Language.Expr.empty, i, [])) p in 
  *)
 
 let rec compile_expr expr = match expr with
-  | Syntax.Expr.Const x                 -> [CONST x]
-  | Syntax.Expr.Var x                   -> [LD x]
-  | Syntax.Expr.Binop (op, left, right) -> (compile_expr left) @ (compile_expr right) @ [BINOP op]
+  | Language.Expr.Const x                 -> [CONST x]
+  | Language.Expr.Var x                   -> [LD x]
+  | Language.Expr.Binop (op, left, right) -> (compile_expr left) @ (compile_expr right) @ [BINOP op]
   
 let rec compile program = match program with
-  | Syntax.Stmt.Read var                -> [READ; ST var]
-  | Syntax.Stmt.Write expr              -> (compile_expr expr) @ [WRITE]
-  | Syntax.Stmt.Assign (var, expr)      -> (compile_expr expr) @ [ST var]
-  | Syntax.Stmt.Seq (curr, next)        -> (compile curr) @ (compile next)
+  | Language.Stmt.Read var                -> [READ; ST var]
+  | Language.Stmt.Write expr              -> (compile_expr expr) @ [WRITE]
+  | Language.Stmt.Assign (var, expr)      -> (compile_expr expr) @ [ST var]
+  | Language.Stmt.Seq (curr, next)        -> (compile curr) @ (compile next)

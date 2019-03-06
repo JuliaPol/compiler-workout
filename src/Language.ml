@@ -67,6 +67,8 @@ module Expr =
 	  | Var x -> st x
 	  | Binop (op, left, right) -> operator op (eval st left) (eval st right) 
 
+	let prsBinOp op = ostap(- $(op)), (fun x y -> Binop (op, x, y))
+	  
     (* Expression parser. You can use the following terminals:
 
          IDENT   --- a non-empty identifier a-zA-Z[a-zA-Z0-9_]* as a string
@@ -74,7 +76,21 @@ module Expr =
    
     *)
     ostap (
-      parse: empty {failwith "Not implemented yet"}
+       expr:
+      	    !(Ostap.Util.expr
+      		    (fun x -> x)
+      		    (Array.map (fun (asc, ops) -> asc, List.map prsBinOp ops)
+                    [|
+                        `Lefta, ["!!"];
+                        `Lefta, ["&&"];
+                        `Nona , ["<="; "<"; ">="; ">"; "=="; "!="];
+                        `Lefta, ["+"; "-"];
+                        `Lefta, ["*"; "/"; "%"];
+                    |]
+                )
+      		    primary
+      		);
+      	primary: x:IDENT {Var x} | c:DECIMAL {Const c} | -"(" expr -")"
     )
 
   end
@@ -115,7 +131,12 @@ module Stmt =
 
     (* Statement parser *)
     ostap (
-      parse: empty {failwith "Not implemented yet"}
+       line:
+        x:IDENT ":=" e:!(Expr.expr)         {Assign (x, e)}
+        | "read"  "("  x:IDENT        ")"   {Read x}
+        | "write" "("  e:!(Expr.expr) ")"   {Write e};
+
+      parse: l:line ";" rest:parse {Seq (l, rest)} | line
     )
 	
 	
