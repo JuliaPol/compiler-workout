@@ -44,7 +44,28 @@ module Expr =
        Takes a state and an expression, and returns the value of the expression in 
        the given state.
     *)
-    let eval _ = failwith "Not implemented yet"
+    let bool_to_int b = if b then 1 else 0 
+	let int_to_bool i = i != 0 
+
+	let operator op left right = match op with
+	  | "+"  -> left + right
+	  | "-"  -> left - right
+	  | "*"  -> left * right
+	  | "/"  -> left / right
+	  | "%"  -> left mod right
+	  | "==" -> bool_to_int (left = right)
+	  | "!=" -> bool_to_int (left != right)
+	  | "<=" -> bool_to_int (left <= right)
+	  | "<"  -> bool_to_int (left < right)
+	  | ">=" -> bool_to_int (left >= right)
+	  | ">"  -> bool_to_int (left > right)
+	  | "&&" -> bool_to_int (int_to_bool left && int_to_bool right)
+	  | "!!" -> bool_to_int (int_to_bool left || int_to_bool right)
+	  
+	let rec eval st exp = match exp with
+	  | Const v -> v
+	  | Var x -> st x
+	  | Binop (op, left, right) -> operator op (eval st left) (eval st right) 
 
     (* Expression parser. You can use the following terminals:
 
@@ -78,13 +99,26 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-    let eval _ = failwith "Not implemented yet"
+
+	let rec eval cfg op = 
+		let (st, input, output) = cfg in 
+		match op with
+		  | Read var	-> (match input with
+							| x::rest -> (Expr.update var x st), rest, output 
+							| [] -> failwith("No more input")
+						)
+
+		  | Write expr      -> st, input, (output @ [Expr.eval st expr])
+		  | Assign (var, expr) -> (Expr.update var (Expr.eval st expr) st), input, output
+		  | Seq (t1, t2)       -> eval (eval cfg t1) t2
+                              
 
     (* Statement parser *)
     ostap (
       parse: empty {failwith "Not implemented yet"}
     )
-      
+	
+	
   end
 
 (* The top-level definitions *)
