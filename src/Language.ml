@@ -119,9 +119,9 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-  let rec eval cfg op = 
+  let rec eval cfg stmt = 
 		let (st, input, output) = cfg in 
-		match op with
+		match stmt with
 		  | Read var	-> (match input with
 							| x::rest -> (Expr.update var x st), rest, output 
 							| [] -> failwith("No more input")
