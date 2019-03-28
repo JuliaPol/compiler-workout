@@ -38,7 +38,7 @@ let instrEval (stack, (s, inp, out)) instruction = match instruction with
     | z :: tail -> (tail, (s, inp, out @ [z]))
     | _         -> failwith "Not enough elements in stack")
   | BINOP op -> (match stack with
-    | y :: x :: tail -> ((Language.Expr.action op x y) :: tail, (s, inp, out))
+    | y :: x :: tail -> ((Language.Expr.operator op x y) :: tail, (s, inp, out))
     | _              -> failwith "Not enough elements in stack")
   | CONST z  -> (z :: stack, (s, inp, out))
   | ST x     -> (match stack with
